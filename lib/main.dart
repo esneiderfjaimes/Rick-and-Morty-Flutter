@@ -1,42 +1,52 @@
+import 'package:animated_theme_switcher/animated_theme_switcher.dart';
 import 'package:flutter/material.dart';
+import 'package:rick_and_morty/theme/ThemeService.dart';
+import 'package:rick_and_morty/theme/scaffold_theme_switch.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final themeService = await ThemeService.instance;
+  var initTheme = themeService.initial;
+  runApp(MyApp(theme: initTheme));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({
+    Key? key,
+    required this.theme,
+  }) : super(key: key);
+
+  final ThemeData theme;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        title: 'Rick and Morty Flutter App',
-        theme: ThemeData(
-          brightness: Brightness.light,
-          useMaterial3: true,
-        ),
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          useMaterial3: true,
-        ),
-        themeMode: ThemeMode.system,
-        debugShowCheckedModeBanner: false,
-        home: const MyHomePage());
+    return ThemeProvider(
+      initTheme: theme,
+      builder: (_, theme) {
+        return MaterialApp(
+          title: 'Rick and Morty Flutter App',
+          theme: theme,
+          debugShowCheckedModeBanner: false,
+          home: const MyHomePage(),
+        );
+      },
+    );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text(
-          'Hi.',
-          style: Theme.of(context).textTheme.displayMedium,
-        ),
-      ),
+    return ScaffoldThemeSwitch(
+      title: 'Rick and Morty Flutter App',
+      body: const Center(),
     );
   }
 }
