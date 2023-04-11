@@ -44,9 +44,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    return ScaffoldThemeSwitch(
+    return const ScaffoldThemeSwitch(
       title: 'Rick and Morty Flutter App',
-      body: const Center(),
+      body: Center(),
     );
   }
 }
