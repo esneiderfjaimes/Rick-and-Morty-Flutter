@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:http/http.dart' as http;
-import 'package:rick_and_morty/theme/scaffold_theme_switch.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 import '../models/character.dart';
+import '../theme/scaffold_theme_switch.dart';
 
 class CharactersPage extends StatefulWidget {
   const CharactersPage({Key? key}) : super(key: key);
@@ -15,20 +15,39 @@ class CharactersPage extends StatefulWidget {
 }
 
 class _CharactersPageState extends State<CharactersPage> {
-  CharactersQuery? _charactersQuery;
+  final PagingController<int, Character> _pagingController =
+      PagingController(firstPageKey: 0);
 
-  Future<CharactersQuery> fetchData() async {
-    if (_charactersQuery != null) return _charactersQuery!;
+  @override
+  void initState() {
+    _pagingController.addPageRequestListener((pageKey) {
+      _fetchPage(pageKey);
+    });
+    super.initState();
+  }
 
-    final response =
-        await http.get(Uri.parse('https://rickandmortyapi.com/api/character'));
-    if (response.statusCode == 200) {
-      Map<String, dynamic> jsonMap = json.decode(response.body);
-      var query = CharactersQuery.fromJson(jsonMap);
-      _charactersQuery = query;
-      return query;
-    } else {
-      throw Exception("Error code: ${response.statusCode}");
+  Future<void> _fetchPage(int pageKey) async {
+    try {
+      final response = await http.get(
+          Uri.parse('https://rickandmortyapi.com/api/character?page=$pageKey'));
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonMap = json.decode(response.body);
+        var query = CharactersQuery.fromJson(jsonMap);
+        final isLastPage = query.info.next == null;
+        if (isLastPage) {
+          _pagingController.appendLastPage(query.results);
+        } else {
+          String url = query.info.next!;
+          Uri uri = Uri.parse(url);
+          String page = uri.queryParameters['page']!;
+          int nextPageKey = int.parse(page);
+          _pagingController.appendPage(query.results, nextPageKey);
+        }
+      } else {
+        throw Exception("Error code: ${response.statusCode}");
+      }
+    } catch (error) {
+      _pagingController.error = error;
     }
   }
 
@@ -36,39 +55,25 @@ class _CharactersPageState extends State<CharactersPage> {
   Widget build(BuildContext context) {
     return ScaffoldThemeSwitch(
       title: 'Characters',
-      body: FutureBuilder<CharactersQuery>(
-        future: fetchData(),
-        builder: (_, AsyncSnapshot<CharactersQuery> snapshot) {
-          if (_charactersQuery != null) {
-            return _buildGrid(_charactersQuery!.results);
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.hasData) {
-            var data = snapshot.data!;
-            return _buildGrid(data.results);
-          } else {
-            return Center(child: Text(snapshot.error.toString()));
-          }
-        },
+      body: PagedGridView<int, Character>(
+        padding: const EdgeInsets.all(20),
+        pagingController: _pagingController,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+        ),
+        builderDelegate: PagedChildBuilderDelegate<Character>(
+          itemBuilder: (context, item, index) => _buildItemCharacter(
+            item,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildGrid(List<Character> characters) {
-    return AlignedGridView.count(
-      padding: const EdgeInsets.all(20),
-      crossAxisCount: 2,
-      itemCount: characters.length,
-      itemBuilder: (context, index) {
-        final character = characters[index];
-        return _buildItemCharacter(character);
-      },
-    );
+  @override
+  void dispose() {
+    _pagingController.dispose();
+    super.dispose();
   }
 
   Widget _buildItemCharacter(Character character) {
@@ -88,37 +93,32 @@ class _CharactersPageState extends State<CharactersPage> {
         padding: const EdgeInsets.all(10),
         child: Column(
           children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: NetworkImage(
-                character.image,
+            Expanded(
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage: NetworkImage(
+                  character.image,
+                ),
               ),
             ),
-            RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
+            Text(
+              character.status,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: colorStatus),
+            ),
+            Text(character.name,
                 style: Theme.of(context)
                     .textTheme
-                    .bodyMedium
-                    ?.apply(letterSpacingFactor: 0.0),
-                children: [
-                  TextSpan(
-                    text: character.status,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: colorStatus),
-                  ),
-                  TextSpan(
-                    text: "\n${character.name}",
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  TextSpan(text: "\n${character.species}, ${character.gender}"),
-                ],
-              ),
+                    .titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+            Text(
+              "${character.species}, ${character.gender}",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
