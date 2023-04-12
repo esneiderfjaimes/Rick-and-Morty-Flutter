@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -84,7 +85,13 @@ class _CharactersPageState extends State<CharactersPage> {
             : Colors.grey;
 
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/character',
+          arguments: character,
+        );
+      },
       borderRadius: BorderRadius.circular(20.0),
       child: Container(
         decoration: BoxDecoration(
@@ -94,10 +101,13 @@ class _CharactersPageState extends State<CharactersPage> {
         child: Column(
           children: [
             Expanded(
-              child: CircleAvatar(
-                radius: 50,
-                backgroundImage: NetworkImage(
-                  character.image,
+              child: Hero(
+                tag: character.id.toString(),
+                child: ClipOval(
+                  child: Image.network(
+                    character.image,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),

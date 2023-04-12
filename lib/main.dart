@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rick_and_morty/splash/splash.dart';
 import 'package:rick_and_morty/theme/ThemeService.dart';
 import 'package:rick_and_morty/theme/theme_config.dart';
+import 'package:rick_and_morty/ui/character_page.dart';
 import 'package:rick_and_morty/ui/characters_page.dart';
 
 void main() {
@@ -33,7 +34,11 @@ class MyApp extends StatelessWidget {
           title: 'Rick and Morty Flutter App',
           theme: theme,
           debugShowCheckedModeBanner: false,
-          home: const CharactersPage(),
+          initialRoute: "/",
+          routes: {
+            "/": (_) => const CharactersPage(),
+            "/character": (_) => const CharacterPage(),
+          },
         );
       },
     );
