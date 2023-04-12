@@ -1,34 +1,20 @@
 import 'package:animated_theme_switcher/animated_theme_switcher.dart';
 import 'package:flutter/material.dart';
+import 'package:rick_and_morty/splash/splash.dart';
 import 'package:rick_and_morty/theme/ThemeService.dart';
 import 'package:rick_and_morty/theme/scaffold_theme_switch.dart';
 import 'package:rick_and_morty/theme/theme_config.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(FutureBuilder<ThemeService>(
-    future: ThemeService.instance,
-    builder: (BuildContext context, AsyncSnapshot<ThemeService> snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.black,
-          ),
-          child: const Image(
-            image: AssetImage('assets/images/icon.png'),
-            width: 200,
-            height: 200,
-          ),
-        );
-      } else if (snapshot.connectionState == ConnectionState.done &&
-          snapshot.hasData) {
-        var initTheme = snapshot.data!.initial;
-        return MyApp(theme: initTheme);
-      } else {
-        return MyApp(theme: darkTheme);
-      }
-    },
-  ));
+  runApp(
+    Splash<ThemeService, ThemeData>(
+      future: ThemeService.instance,
+      defaultValue: darkTheme,
+      transform: (ThemeService snapshot) => snapshot.initial,
+      builder: (_, ThemeData value) => MyApp(theme: value),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
