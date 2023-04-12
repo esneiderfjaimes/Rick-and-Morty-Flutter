@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
 
-typedef SplashBuilder<R> = Widget Function(BuildContext context, R value);
-typedef Transform<T, R> = R Function(T value);
+typedef SplashBuilder<T> = Widget Function(BuildContext context, T value);
 
-class Splash<T, R> extends StatefulWidget {
+class Splash<T> extends StatefulWidget {
   final Future<T> future;
-  final R defaultValue;
-  final Transform<T, R> transform;
-  final SplashBuilder<R> builder;
+  final T defaultValue;
+  final SplashBuilder<T> builder;
 
   const Splash({
     super.key,
     required this.future,
     required this.defaultValue,
-    required this.transform,
     required this.builder,
   });
 
   @override
-  State<Splash<T, R>> createState() => _Splash<T, R>();
+  State<Splash<T>> createState() => _Splash<T>();
 }
 
-class _Splash<T, R> extends State<Splash<T, R>> {
+class _Splash<T> extends State<Splash<T>> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<T>(
@@ -40,10 +37,9 @@ class _Splash<T, R> extends State<Splash<T, R>> {
           );
         } else if (snapshot.connectionState == ConnectionState.done &&
             snapshot.hasData) {
-          return widget.builder(context, widget.transform(snapshot.data as T));
+          return widget.builder(context, snapshot.data as T);
         } else {
-          return widget.builder(
-              context, widget.transform(widget.defaultValue as T));
+          return widget.builder(context, widget.defaultValue);
         }
       },
     );

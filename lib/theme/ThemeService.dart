@@ -17,6 +17,8 @@ class ThemeService {
     return _instance!;
   }
 
+  static Future<ThemeData> get initialFuture async => (await instance).initial;
+
   final allThemes = <String, ThemeData>{
     'dark': darkTheme,
     'light': lightTheme,

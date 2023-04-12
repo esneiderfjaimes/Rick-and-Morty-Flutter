@@ -8,10 +8,9 @@ import 'package:rick_and_morty/theme/theme_config.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    Splash<ThemeService, ThemeData>(
-      future: ThemeService.instance,
+    Splash<ThemeData>(
+      future: ThemeService.initialFuture,
       defaultValue: darkTheme,
-      transform: (ThemeService snapshot) => snapshot.initial,
       builder: (_, ThemeData value) => MyApp(theme: value),
     ),
   );
