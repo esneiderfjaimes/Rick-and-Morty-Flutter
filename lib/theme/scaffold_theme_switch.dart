@@ -7,7 +7,11 @@ class ScaffoldThemeSwitch extends StatefulWidget {
   final String title;
   final Widget body;
 
-  const ScaffoldThemeSwitch({super.key, required this.title, required this.body});
+  const ScaffoldThemeSwitch({
+    super.key,
+    required this.title,
+    required this.body,
+  });
 
   @override
   State<ScaffoldThemeSwitch> createState() => _ScaffoldThemeSwitch();
@@ -23,7 +27,11 @@ class _ScaffoldThemeSwitch extends State<ScaffoldThemeSwitch> {
     return ThemeSwitchingArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.title),
+          title: Text(
+            widget.title,
+            textAlign: TextAlign.center,
+          ),
+          centerTitle: true,
           actions: [
             ThemeSwitcher(
               builder: (context) => IconButton(
